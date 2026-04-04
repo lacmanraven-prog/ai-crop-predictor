@@ -12,12 +12,12 @@
 
 <body>
     <div id="chatBox">
-        <div class="message-wrapper ai">
+        <div class="greeting-wrapper">
             <div class="heat-loader-wrapper">
-                <div class="loader"> 
+                <div class="loader" style="animation: none; filter: hue-rotate(180deg);">
                     <svg width="100" height="100" viewBox="0 0 100 100" style="position:absolute;">
                         <defs>
-                            <mask id="clipping">
+                            <mask id="clipping-fast">
                                 <polygon points="0,0 100,0 100,100 0,100" fill="black"></polygon>
                                 <polygon points="25,25 75,25 50,75" fill="white"></polygon>
                                 <polygon points="50,25 75,75 25,75" fill="white"></polygon>
@@ -28,10 +28,10 @@
                             </mask>
                         </defs>
                     </svg>
-                    <div class="box"></div>
+                    <div class="box" style="mask: url(#clipping-fast); -webkit-mask: url(#clipping-fast);"></div>
                 </div>
             </div>
-            <div class="message-bubble"><b>pogi: </b>is Ready to chat.</div>
+            <div class="greeting-text">CropyAi</div>
         </div>
     </div>
     <aside id="sidebar" class="sidebar">

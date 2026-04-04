@@ -18,7 +18,7 @@
 .header-title {
   position: absolute;
   /* This moves the starting point to the middle of the header */
-  left: 50%;
+  left: 52%;
   /* This shifts it back by half its own width to be perfectly centered */
   transform: translateX(-50%);
 
@@ -264,7 +264,7 @@ body {
 #chatBox {
   width: 100%;
   max-width: 700px;
-  margin-top: 40px;
+  margin-top: 25px;
   padding: 0 20px 150px 20px;
   box-sizing: border-box;
   word-wrap: break-word;
@@ -277,61 +277,42 @@ body {
 }
 
 /* ========================================== */
-/* PERMANENT AI BLUE CORE ICON                */
+/* GREETING INTRO                             */
 /* ========================================== */
+.greeting-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  position: relative;
+  margin-bottom: 20px;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
 
-.ai-blue-core {
-  /* Use Google/Cropy Blue Tones */
-  --color-one: #8ab4f8; /* Light Blue */
-  --color-two: #4285f4; /* Brand Blue */
-  --color-three: rgba(66, 133, 244, 0.5);
-  --color-four: rgba(26, 115, 232, 0.5);
-  --color-five: rgba(138, 180, 248, 0.2);
-
-  --time-animation: 3s; /* Slightly slower for a "calm" feel */
-  --size: 0.32; /* Shrunken for the chat avatar */
-
-  width: 100px;
-  height: 100px;
+.greeting-wrapper .heat-loader-wrapper {
+  transform: scale(2);
   position: absolute;
-  top: 0;
-  left: 0;
-  border-radius: 50%;
-  transform: scale(var(--size));
-  transform-origin: top left;
-
-  /* Blue glow instead of orange */
-  box-shadow: 0 0 20px 0 var(--color-three);
-
-  /* REMOVED 'colorize' so it stays blue! */
+  top: 39%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(2);
+  z-index: -1;
+  transition: transform 0.5s ease;
 }
 
-/* Use the SAME internal logic as the other loader */
-.ai-blue-core::before,
-.ai-blue-core .box {
-  content: "";
+.greeting-text {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #e3e3e3;
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-}
-
-.ai-blue-core::before {
-  border-top: solid 1px var(--color-one);
-  border-bottom: solid 1px var(--color-two);
-  background: linear-gradient(180deg, var(--color-five), var(--color-four));
-}
-
-.ai-blue-core .box {
-  background: linear-gradient(
-    180deg,
-    var(--color-one) 30%,
-    var(--color-two) 70%
-  );
-  mask: url(#clipping);
-  -webkit-mask: url(#clipping);
+  bottom: 30%; /* Position text at the bottom */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
 /* ========================================== */
@@ -357,60 +338,29 @@ body {
   --color-three: #ffbf4780;
   --color-four: #bf4a1d80;
   --color-five: #ffbf4740;
-  --time-animation: 1s;
-  /* Lock the exact size */
+  --time-animation: 10s; /* Default is slow */
+
   width: 100px;
   height: 100px;
-
-  /* Pin it to the top-left of the cage */
   position: absolute;
   top: 0;
   left: 0;
-
   border-radius: 50%;
-
-  /* Scale it down safely */
   transform: scale(0.35);
   transform-origin: top left;
 
   box-shadow:
     0 0 25px 0 var(--color-three),
     0 20px 50px 0 var(--color-four);
-  animation: colorize calc(var(--time-animation) * 3) ease-in-out infinite;
+
+  /* 🎨 COLOR LOCK FIX: This locks it to that AI blue/purple permanently */
+  filter: hue-rotate(180deg);
+
+  /* Notice we REMOVED the 'animation: colorize' line entirely! */
 }
 
-/* 🧘 SLOW GEAR: For the greeting and final answers */
 .loader.fast {
-  --color-one: #ffbf48;
-  --color-two: #be4a1d;
-  --color-three: #ffbf4780;
-  --color-four: #bf4a1d80;
-  --color-five: #ffbf4740;
-  --time-animation: 5s;
-  /* Lock the exact size */
-  width: 100px;
-  height: 100px;
-
-  /* Pin it to the top-left of the cage */
-  position: absolute;
-  top: 0;
-  left: 0;
-
-  border-radius: 50%;
-
-  /* Scale it down safely */
-  transform: scale(0.35);
-  transform-origin: top left;
-
-  box-shadow:
-    0 0 25px 0 var(--color-three),
-    0 20px 50px 0 var(--color-four);
-  animation: colorize calc(var(--time-animation) * 3) ease-in-out infinite;
-}
-
-/* 🚀 FAST GEAR: For the thinking state */
-.loader.fast {
-  --time-animation: 0.8s;
+  --time-animation: 3s; /* Fast speed restored! */
 }
 
 .loader::before {
@@ -430,13 +380,13 @@ body {
 }
 
 .loader svg {
-  position: absolute; /* Pinned! */
+  position: absolute;
   top: 0;
   left: 0;
 }
 
 .loader .box {
-  position: absolute; /* THIS WAS THE MAIN CULPRIT! Pinned! */
+  position: absolute;
   top: 0;
   left: 0;
   width: 100px;
@@ -446,60 +396,105 @@ body {
     var(--color-one) 30%,
     var(--color-two) 70%
   );
-  mask: url(#clipping);
-  -webkit-mask: url(#clipping);
+  mask: url(#clipping-slow);
+  -webkit-mask: url(#clipping-slow);
+}
+
+.loader.fast .box {
+  mask: url(#clipping-fast);
+  -webkit-mask: url(#clipping-fast);
 }
 
 .loader svg {
   position: absolute;
 }
 
-.loader svg #clipping {
+/* ========================================== */
+/* POLYGON ANIMATIONS (UNIVERSAL BASE)        */
+/* ========================================== */
+
+/* By using "mask", it grabs slow, fast, AND greeting automatically! */
+.loader svg mask {
   filter: contrast(15);
   animation: roundness calc(var(--time-animation) / 2) linear infinite;
 }
 
-.loader svg #clipping polygon {
+.loader svg mask polygon {
   filter: blur(7px);
 }
 
-.loader svg #clipping polygon:nth-child(1) {
+.loader svg mask polygon:nth-child(1) {
   transform-origin: 75% 25%;
   transform: rotate(90deg);
 }
 
-.loader svg #clipping polygon:nth-child(2) {
+.loader svg mask polygon:nth-child(2) {
   transform-origin: 50% 50%;
   animation: rotation var(--time-animation) linear infinite reverse;
 }
 
-.loader svg #clipping polygon:nth-child(3) {
+.loader svg mask polygon:nth-child(3) {
   transform-origin: 50% 60%;
   animation: rotation var(--time-animation) linear infinite;
-  animation-delay: calc(var(--time-animation) / -3);
+  animation-delay: calc(var(--time-animation) / 3);
 }
 
-.loader svg #clipping polygon:nth-child(4) {
+.loader svg mask polygon:nth-child(4) {
   transform-origin: 40% 40%;
   animation: rotation var(--time-animation) linear infinite reverse;
 }
 
-.loader svg #clipping polygon:nth-child(5) {
+.loader svg mask polygon:nth-child(5) {
   transform-origin: 40% 40%;
   animation: rotation var(--time-animation) linear infinite reverse;
-  animation-delay: calc(var(--time-animation) / -2);
+  animation-delay: calc(var(--time-animation) / 2);
 }
 
-.loader svg #clipping polygon:nth-child(6) {
+.loader svg mask polygon:nth-child(6) {
   transform-origin: 60% 40%;
   animation: rotation var(--time-animation) linear infinite;
 }
 
-.loader svg #clipping polygon:nth-child(7) {
+.loader svg mask polygon:nth-child(7) {
   transform-origin: 60% 40%;
   animation: rotation var(--time-animation) linear infinite;
-  animation-delay: calc(var(--time-animation) / -1.5);
+  animation-delay: calc(var(--time-animation) / 1.5);
 }
+
+/* --- THE KEYFRAMES (The actual movement rules) --- */
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes roundness {
+  0%, 100% { filter: contrast(15); }
+  20%, 40% { filter: contrast(3); }
+  60% { filter: contrast(15); }
+}
+
+/* ========================================== */
+/* THE GOOEY SLIME OVERRIDE (FAST STATE)      */
+/* ========================================== */
+
+/* 1. Make the overall mask pulsing fast (0.4s) */
+.loader.fast svg mask {
+  animation-duration: 0.4s !important; 
+}
+
+/* 2. Force ALL the inner slime polygons to spin at 0.8s */
+.loader.fast svg mask polygon {
+  animation-duration: 0.8s !important; 
+}
+
+/* 3. Re-apply the timing delays so the slime stays organic and doesn't clump up */
+.loader.fast svg mask polygon:nth-child(1) { animation-delay: 0.2s !important; }
+.loader.fast svg mask polygon:nth-child(2) { animation-delay: 0.4s !important; }
+.loader.fast svg mask polygon:nth-child(3) { animation-delay: 0.5s !important; }
+.loader.fast svg mask polygon:nth-child(4) { animation-delay: 0.2s !important; }
+.loader.fast svg mask polygon:nth-child(5) { animation-delay: 0.4s !important; }
+.loader.fast svg mask polygon:nth-child(6) { animation-delay: 0.5s !important; }
+.loader.fast svg mask polygon:nth-child(7) { animation-delay: 0.2s !important; }
 
 @keyframes rotation {
   0% {
@@ -582,10 +577,10 @@ body {
 .input-wrapper {
   position: fixed; /* Locks it to the screen */
   bottom: 35px; /* Distance from the bottom edge */
-  left: 47%; /* Centers it horizontally */
+  left: 48.5%; /* Centers it horizontally */
   transform: translateX(-50%); /* Perfectly aligns the center */
   width: 100%;
-  max-width: 800px;
+  max-width: 850px;
   z-index: 1000; /* Keeps it on top of the chat text */
   padding: 0 20px;
   box-sizing: border-box;
@@ -713,7 +708,7 @@ body {
 .message-wrapper {
   display: flex;
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
   align-items: flex-start;
 }
 
@@ -725,11 +720,13 @@ body {
 /* Keep AI messages on the left */
 .message-wrapper.ai {
   justify-content: flex-start;
+  align-items: flex-start; /* Align icon to the top */
+  gap: 0px; /* No gap between icon and bubble, they will overlap slightly */
 }
 
 .message-bubble {
   max-width: 80%; /* Don't let bubbles hit the opposite wall */
-  padding: 12px 16px;
+  padding: 5px 16px;
   border-radius: 20px;
   font-size: 15px;
   line-height: 1.4;
@@ -747,6 +744,7 @@ body {
 .ai .message-bubble {
   color: #e3e3e3;
   border-bottom-left-radius: 4px;
+  margin-top: 41px; /* Lower the bubble down from the icon */
 }
 
 /* ========================================== */
