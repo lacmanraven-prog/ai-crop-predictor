@@ -1,0 +1,933 @@
+.main-header {
+  position: fixed;
+  top: 10px;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #131314;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  z-index: 3000;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.header-title {
+  position: absolute;
+  /* This moves the starting point to the middle of the header */
+  left: 50%;
+  /* This shifts it back by half its own width to be perfectly centered */
+  transform: translateX(-50%);
+
+  font-size: 18px;
+  font-weight: 600;
+  color: #e3e3e3;
+  letter-spacing: 0.5px;
+  white-space: nowrap; /* Prevents the text from breaking into two lines */
+  pointer-events: none; /* Allows clicks to pass through to items below if needed */
+  z-index: 2900;
+}
+
+/* Optional: Add a subtle glow to make it look 2026-premium */
+.header-title {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.profile-section {
+  margin-left: auto; /* The magic trick that pushes this to the right */
+  display: flex;
+  align-items: center;
+}
+
+.profile-container {
+  position: relative;
+}
+
+.profile-pfp {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: 0.2s;
+}
+
+.profile-pfp:hover {
+  border-color: #444746;
+}
+
+/* The Pop-up Card */
+.profile-menu {
+  position: absolute;
+  top: 50px; /* Sits right below the header */
+  right: 0;
+  background-color: #1e1f20;
+  border: 1px solid #444746;
+  border-radius: 12px;
+  width: 180px;
+  padding: 8px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 4000;
+}
+
+.profile-item {
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  color: #e3e3e3;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: 0.2s;
+}
+
+.profile-item:hover {
+  background-color: #333538;
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #444746;
+  margin: 4px 0;
+}
+
+.sign-out {
+  color: #ff0000; /* Red text for logging out */
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  color: #e3e3e3;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+  border-radius: 8px; /* Smooth square-round look */
+  z-index: 3100; /* Stays above the title if they overlap */
+  border-right-color: #1e1f20;
+}
+
+.menu-btn:hover {
+  background-color: #333538;
+  color: #ffffff;
+}
+
+/* Sidebar Main Style */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px; /* Hidden off-screen by default */
+  width: 280px;
+  height: 100vh;
+  background-color: #1e1f20;
+  border-right: 1px solid #444746; /* Your requested border color */
+  z-index: 5000; /* Higher than header and menus */
+  transition: transform 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+/* When the sidebar is open */
+.sidebar.active {
+  transform: translateX(280px);
+}
+
+/* Sidebar Internal Items */
+.sidebar-header {
+  padding: 25px 20px;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #444746;
+  color: #e3e3e3;
+}
+
+.sidebar-nav {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  color: #c4c7c5;
+  padding: 12px;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background-color: #333538;
+  color: #ffffff;
+}
+
+/* The Dark Background Overlay */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7); /* Darker backdrop */
+  z-index: 4500; /* Between header and sidebar */
+  backdrop-filter: blur(4px); /* Modern 2026 glass effect */
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* RESPONSIVE MEDIA QUERY */
+@media (max-width: 600px) {
+  /* On small phones, hide the title if it overlaps, or shrink it */
+  .header-title {
+    font-size: 15px;
+    display: none; /* Optional: Hide title on very small screens to save space */
+  }
+
+  .sidebar {
+    width: 85%; /* Cover most of the screen on mobile */
+    left: -85%;
+  }
+
+  .sidebar.active {
+    transform: translateX(85%);
+  }
+}
+
+/* ========================================== */
+/* FADE GRADIENTS (Performance Friendly)      */
+/* ========================================== */
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(to bottom, #131314 20%, transparent);
+  z-index: 500;
+  pointer-events: none;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  background: linear-gradient(to top, #131314 40%, transparent);
+  z-index: 500;
+  pointer-events: none;
+  padding: 70px;
+}
+
+/* ========================================== */
+/* BASE                                       */
+/* ========================================== */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #131314;
+  color: #e3e3e3;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
+/* ========================================== */
+/* CHAT MESSAGES                              */
+/* ========================================== */
+#chatBox {
+  width: 100%;
+  max-width: 700px;
+  margin-top: 40px;
+  padding: 0 20px 150px 20px;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  overflow-y: visible;
+  will-change: transform;
+  transform: translateZ(0);
+  content-visibility: auto;
+}
+
+/* ========================================== */
+/* PERMANENT AI BLUE CORE ICON                */
+/* ========================================== */
+
+.ai-blue-core {
+  /* Use Google/Cropy Blue Tones */
+  --color-one: #8ab4f8; /* Light Blue */
+  --color-two: #4285f4; /* Brand Blue */
+  --color-three: rgba(66, 133, 244, 0.5);
+  --color-four: rgba(26, 115, 232, 0.5);
+  --color-five: rgba(138, 180, 248, 0.2);
+
+  --time-animation: 3s; /* Slightly slower for a "calm" feel */
+  --size: 0.32; /* Shrunken for the chat avatar */
+
+  width: 100px;
+  height: 100px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  transform: scale(var(--size));
+  transform-origin: top left;
+
+  /* Blue glow instead of orange */
+  box-shadow: 0 0 20px 0 var(--color-three);
+
+  /* REMOVED 'colorize' so it stays blue! */
+}
+
+/* Use the SAME internal logic as the other loader */
+.ai-blue-core::before,
+.ai-blue-core .box {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
+
+.ai-blue-core::before {
+  border-top: solid 1px var(--color-one);
+  border-bottom: solid 1px var(--color-two);
+  background: linear-gradient(180deg, var(--color-five), var(--color-four));
+}
+
+.ai-blue-core .box {
+  background: linear-gradient(
+    180deg,
+    var(--color-one) 30%,
+    var(--color-two) 70%
+  );
+  mask: url(#clipping);
+  -webkit-mask: url(#clipping);
+}
+
+/* ========================================== */
+/* HEAT WAVE AI LOADER                        */
+/* ========================================== */
+/* ========================================== */
+/* HEAT WAVE AI LOADER (SQUISH-PROOF FIX)     */
+/* ========================================== */
+
+.heat-loader-wrapper {
+  width: 32px;
+  height: 32px;
+  margin-right: 5px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  position: relative; /* This is the titanium cage */
+  margin-top: 2px; /* Helps align it perfectly with the text */
+}
+
+.loader {
+  --color-one: #ffbf48;
+  --color-two: #be4a1d;
+  --color-three: #ffbf4780;
+  --color-four: #bf4a1d80;
+  --color-five: #ffbf4740;
+  --time-animation: 1s;
+  /* Lock the exact size */
+  width: 100px;
+  height: 100px;
+
+  /* Pin it to the top-left of the cage */
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  border-radius: 50%;
+
+  /* Scale it down safely */
+  transform: scale(0.35);
+  transform-origin: top left;
+
+  box-shadow:
+    0 0 25px 0 var(--color-three),
+    0 20px 50px 0 var(--color-four);
+  animation: colorize calc(var(--time-animation) * 3) ease-in-out infinite;
+}
+
+/* 🧘 SLOW GEAR: For the greeting and final answers */
+.loader.fast {
+  --color-one: #ffbf48;
+  --color-two: #be4a1d;
+  --color-three: #ffbf4780;
+  --color-four: #bf4a1d80;
+  --color-five: #ffbf4740;
+  --time-animation: 5s;
+  /* Lock the exact size */
+  width: 100px;
+  height: 100px;
+
+  /* Pin it to the top-left of the cage */
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  border-radius: 50%;
+
+  /* Scale it down safely */
+  transform: scale(0.35);
+  transform-origin: top left;
+
+  box-shadow:
+    0 0 25px 0 var(--color-three),
+    0 20px 50px 0 var(--color-four);
+  animation: colorize calc(var(--time-animation) * 3) ease-in-out infinite;
+}
+
+/* 🚀 FAST GEAR: For the thinking state */
+.loader.fast {
+  --time-animation: 0.8s;
+}
+
+.loader::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border-top: solid 1px var(--color-one);
+  border-bottom: solid 1px var(--color-two);
+  background: linear-gradient(180deg, var(--color-five), var(--color-four));
+  box-shadow:
+    inset 0 10px 10px 0 var(--color-three),
+    inset 0 -10px 10px 0 var(--color-four);
+}
+
+.loader svg {
+  position: absolute; /* Pinned! */
+  top: 0;
+  left: 0;
+}
+
+.loader .box {
+  position: absolute; /* THIS WAS THE MAIN CULPRIT! Pinned! */
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(
+    180deg,
+    var(--color-one) 30%,
+    var(--color-two) 70%
+  );
+  mask: url(#clipping);
+  -webkit-mask: url(#clipping);
+}
+
+.loader svg {
+  position: absolute;
+}
+
+.loader svg #clipping {
+  filter: contrast(15);
+  animation: roundness calc(var(--time-animation) / 2) linear infinite;
+}
+
+.loader svg #clipping polygon {
+  filter: blur(7px);
+}
+
+.loader svg #clipping polygon:nth-child(1) {
+  transform-origin: 75% 25%;
+  transform: rotate(90deg);
+}
+
+.loader svg #clipping polygon:nth-child(2) {
+  transform-origin: 50% 50%;
+  animation: rotation var(--time-animation) linear infinite reverse;
+}
+
+.loader svg #clipping polygon:nth-child(3) {
+  transform-origin: 50% 60%;
+  animation: rotation var(--time-animation) linear infinite;
+  animation-delay: calc(var(--time-animation) / -3);
+}
+
+.loader svg #clipping polygon:nth-child(4) {
+  transform-origin: 40% 40%;
+  animation: rotation var(--time-animation) linear infinite reverse;
+}
+
+.loader svg #clipping polygon:nth-child(5) {
+  transform-origin: 40% 40%;
+  animation: rotation var(--time-animation) linear infinite reverse;
+  animation-delay: calc(var(--time-animation) / -2);
+}
+
+.loader svg #clipping polygon:nth-child(6) {
+  transform-origin: 60% 40%;
+  animation: rotation var(--time-animation) linear infinite;
+}
+
+.loader svg #clipping polygon:nth-child(7) {
+  transform-origin: 60% 40%;
+  animation: rotation var(--time-animation) linear infinite;
+  animation-delay: calc(var(--time-animation) / -1.5);
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes roundness {
+  0%,
+  100% {
+    filter: contrast(15);
+  }
+  20%,
+  40% {
+    filter: contrast(3);
+  }
+  60% {
+    filter: contrast(15);
+  }
+}
+
+@keyframes colorize {
+  0%,
+  100% {
+    filter: hue-rotate(0deg);
+  }
+  20% {
+    filter: hue-rotate(-30deg);
+  }
+  40% {
+    filter: hue-rotate(-60deg);
+  }
+  60% {
+    filter: hue-rotate(-90deg);
+  }
+  80% {
+    filter: hue-rotate(-45deg);
+  }
+}
+
+/* ========================================== */
+/* SLIM SCROLLBAR (No Arrows)                 */
+/* ========================================== */
+
+/* 1. Make it very small (4px) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* 2. Hide the arrows (buttons) entirely */
+::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 3. The draggable handle */
+::-webkit-scrollbar-thumb {
+  background: #333538;
+  border-radius: 10px;
+}
+
+/* Support for Firefox */
+body {
+  scrollbar-width: thin;
+  scrollbar-color: #333538 transparent;
+}
+
+/* ========================================== */
+/* INPUT AREA (CARD LAYOUT)                   */
+/* ========================================== */
+.input-wrapper {
+  position: fixed; /* Locks it to the screen */
+  bottom: 35px; /* Distance from the bottom edge */
+  left: 47%; /* Centers it horizontally */
+  transform: translateX(-50%); /* Perfectly aligns the center */
+  width: 100%;
+  max-width: 800px;
+  z-index: 1000; /* Keeps it on top of the chat text */
+  padding: 0 20px;
+  box-sizing: border-box;
+  background-color: transparent;
+}
+
+.input-card {
+  background-color: #1e1f20;
+  border-radius: 28px;
+  width: 100%;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  /* This ensures the card itself doesn't collapse */
+  min-height: 60px;
+  box-shadow: 0px 8px 16px -4px rgba(0, 0, 0, 0.2);
+}
+
+/* 2. The Input Field (Now a Textarea) */
+#userInput {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 16px;
+  outline: none;
+  width: 100%;
+
+  /* THE STABLE HEIGHT FIX */
+  height: 63px;
+  min-height: 32px;
+  padding: 8px 16px; /* This gives the text room away from the edges */
+
+  box-sizing: border-box;
+  font-family: inherit;
+  resize: none;
+  overflow-y: auto; /* Hides those tiny arrows when empty */
+  line-height: 1.5;
+  scrollbar-width: thin;
+}
+
+/* ========================================== */
+/* CUSTOM SCROLLBAR FOR USER INPUT            */
+/* ========================================== */
+
+#userInput::-webkit-scrollbar {
+  width: 4px;
+}
+
+#userInput::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#userInput::-webkit-scrollbar-thumb {
+  background: #333538;
+  border-radius: 10px;
+}
+
+/* 2. For Firefox */
+#userInput {
+  scrollbar-width: thin;
+  scrollbar-color: #333538 transparent;
+}
+
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  padding-right: 4px;
+}
+
+#sendBtn {
+  background: transparent;
+  border: none;
+  color: #e3e3e3;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: 0.2s;
+}
+
+#sendBtn:hover {
+  background-color: #333538;
+}
+
+/* ========================================== */
+/* PLACEHOLDER STYLING                        */
+/* ========================================== */
+#userInput::placeholder {
+  color: #e3e3e3;
+  opacity: 1;
+  font-size: 16px;
+}
+
+/* ========================================== */
+/* RESPONSIVE / MOBILE DESIGN                 */
+/* ========================================== */
+@media screen and (max-width: 600px) {
+  .input-card {
+    padding: 10px;
+    border-radius: 15px;
+  }
+
+  #userInput {
+    font-size: 14px;
+    padding-bottom: 5px;
+  }
+
+  #sendBtn {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+}
+
+/* ========================================== */
+/* CHAT BUBBLES                               */
+/* ========================================== */
+
+.message-wrapper {
+  display: flex;
+  width: 100%;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+/* Push User messages to the right */
+.message-wrapper.user {
+  justify-content: flex-end;
+}
+
+/* Keep AI messages on the left */
+.message-wrapper.ai {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  max-width: 80%; /* Don't let bubbles hit the opposite wall */
+  padding: 12px 16px;
+  border-radius: 20px;
+  font-size: 15px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+/* User Bubble Style */
+.user .message-bubble {
+  background-color: #333538; /* Subtle gray */
+  color: #ffffff;
+  border-bottom-right-radius: 4px; /* Makes it look like a tail */
+}
+
+/* AI Bubble Style */
+.ai .message-bubble {
+  color: #e3e3e3;
+  border-bottom-left-radius: 4px;
+}
+
+/* ========================================== */
+/* BUTTON ROW LAYOUT                          */
+/* ========================================== */
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px; /* Balanced space between Tools and Mic */
+  width: 100%;
+  margin-top: 8px;
+}
+
+.tools-btn {
+  background: transparent;
+  border: 1px solid #444746;
+  color: #e3e3e3;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: 0.2s;
+}
+
+.tools-btn:hover {
+  background-color: #333538;
+}
+
+/* Ensure the send button is also clean */
+#sendBtn {
+  background: transparent;
+  border: none;
+  color: #e3e3e3;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========================================== */
+/* TOOLS POP-UP MENU                          */
+/* ========================================== */
+
+.tools-menu {
+  position: absolute;
+  bottom: 150%; /* Sits exactly above the input card */
+  left: 0px;
+  background-color: #1e1f20;
+  border: 1px solid #444746;
+  border-radius: 16px;
+  min-width: 210;
+  padding: 6px 0;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+
+/* Hidden state */
+.tools-menu.hidden {
+  display: none;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.menu-item {
+  background: transparent;
+  border: none;
+  color: #e3e3e3;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  transition: 0.2s;
+}
+
+.menu-item:hover {
+  background-color: #333538;
+}
+
+.menu-item i {
+  width: 20px;
+  display: flex;
+  justify-content: center;
+  color: #c4c7c5;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.input-card.drag-over {
+  border: 2px dashed #4285f4;
+  background-color: rgba(66, 133, 244, 0.05);
+  transform: scale(1.01);
+}
+
+/* ========================================== */
+/* SIDE RAIL (2026-Premium Style)             */
+/* ========================================== */
+.side-rail {
+  position: fixed;
+  left: 0;
+  top: 60px; /* Starts exactly where the header ends */
+  width: 60px; /* Thin professional rail width */
+  height: calc(100vh - 60px); /* Fill the rest of the screen height */
+  background-color: #131314;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px 0;
+  gap: 20px;
+  z-index: 2500; /* Stays below the header but above the chat */
+}
+
+/* THE NEW MAGIC SLIDER */
+.active-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px; /* Must match the height of your buttons */
+  background-color: rgba(66, 133, 244, 0.2);
+  border-radius: 0 18px 18px 0;
+  border-left: 4px solid #4285f4;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth gliding math */
+  z-index: 1; /* Stays behind the icons */
+  pointer-events: none; /* Allows the mouse to click through it */
+}
+
+.rail-item {
+  background: transparent !important;
+  border: none;
+  color: #c4c7c5;
+  font-size: 20px;
+  cursor: pointer;
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0px;
+  margin: 0;
+  z-index: 2;
+  position: relative;
+  padding-right: 4px;
+  transition: 0.3s;
+}
+
+.rail-item.active,
+.rail-item:hover {
+  color: #4285f4;
+}
+
+/* IMPORTANT: Shift your chat content to the right to make room for the rail */
+#chatBox,
+.input-wrapper {
+  margin-left: 70px;
+  width: calc(100% - 70px);
+}
+
+/* RESPONSIVE: On very small phones, we hide the rail to save space */
+@media (max-width: 600px) {
+  .side-rail {
+    display: none;
+  }
+  #chatBox,
+  .input-wrapper {
+    margin-left: 0;
+    width: 100%;
+  }
+}
