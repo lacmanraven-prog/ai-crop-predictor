@@ -215,7 +215,7 @@ async function sendMessage() {
       // Check if it was manually stopped by the user!
       if (error.name === "AbortError") {
         aiRow.querySelector(".message-bubble").innerHTML =
-          `<span style='color:#c4c7c5;'><i>Generation stopped by user.</i></span>`;
+          `<span style='color:#c4c7c5;'><i>You stopped this response.</i></span>`;
       } else {
         aiRow.querySelector(".message-bubble").innerHTML =
           `<span style='color:#ff6b6b;'>${error.message}</span>`;
@@ -414,3 +414,27 @@ function typeWriter(element, text, speed = 15) {
   }
   type(); // Start the engine
 }
+
+// ==========================================
+// THE BRIDGE RECEIVER (Auto-Send Logic)
+// ==========================================
+window.addEventListener('DOMContentLoaded', () => {
+    // Check if the scanner left a message in memory
+    const savedPrompt = localStorage.getItem('cropy_bridge_prompt');
+    
+    if (savedPrompt) {
+        // 1. Put the message in the input box
+        userInput.value = savedPrompt;
+        
+        // 2. Delete it from memory so it doesn't loop forever
+        localStorage.removeItem('cropy_bridge_prompt'); 
+        
+        // 3. Update the icon
+        checkIcon();
+        
+        // 4. Automatically click send!
+        setTimeout(() => {
+            sendMessage();
+        }, 500); // 500ms delay looks more natural
+    }
+});

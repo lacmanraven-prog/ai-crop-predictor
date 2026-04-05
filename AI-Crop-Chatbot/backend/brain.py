@@ -42,66 +42,70 @@ def read_weather_data():
 
 def get_ai_response(user_input, base64_image=None):
     """Combines the CSV data, Vision analysis, and user question"""
-    
-    # Grab the global tracker so we know which key to use
-    global current_key_index 
 
-    # 1. Grab the local weather context
+    # Grab the global tracker so we know which key to use
+    global current_key_index
+
+    # 1. Grab the local weather context (Only need to do this once)
     weather_context = read_weather_data()
 
-    # 2. If there is an image, ask vision.py to scan it first
-    analysis_results = ""
-    if base64_image:
-        print("🔍 Calling Vision Specialist...")
-        analysis_results = vision.analyze_plant_image(base64_image)
-
-    # 3. Create the master prompt
-    prompt = f"""
-    You are CropyAi, an expert agricultural Decision Support Chatbot for farmers in Tupi, South Cotabato.
-    
-    WEATHER CONTEXT: {weather_context}
-    VISION SCAN RESULTS: {analysis_results}
-    
-    USER QUESTION: "{user_input}"
-    
-    INSTRUCTIONS:
-    1. If the farmer uploaded a photo, explain the Vision Scan Results simply.
-    2. Connect the plant's health to the Tupi weather (e.g., humidity/rain).
-    3. Keep your answer under 3 sentences for mobile display.
-    """
-
-    # 4. THE ROTATION ENGINE
+    # 2. THE ROTATION ENGINE
+    # We loop through all keys to find one that works for BOTH Vision and Chat
     for attempt in range(len(API_KEYS)):
         current_key = API_KEYS[current_key_index]
-        
-        # Build a fresh client using the CURRENT key in the rotation
-        client = genai.Client(api_key=current_key)
 
         try:
-            print(f"📡 Using API Key {current_key_index + 1}...")
-            # Call the main model to summarize everything
-            response = client.models.generate_content(
-                model="gemini-2.5-flash", contents=prompt
-            )
-            return response.text
+            # 📸 3. VISION SCAN (Now inside the loop!)
+            analysis_results = ""
+            if base64_image:
+                print(
+                    f"🔍 Calling Vision Specialist with Key {current_key_index + 1}..."
+                )
+                # Pass the current key to the vision specialist
+                analysis_results = vision.analyze_plant_image(base64_image, current_key)
+
+            # 📝 4. CREATE THE MASTER PROMPT
+            # This must be inside the loop so it can use the analysis_results
+            prompt = f"""
+            You are CropyAi, an expert agricultural Decision Support Chatbot for farmers in Tupi, South Cotabato.
             
+            WEATHER CONTEXT: {weather_context}
+            VISION SCAN RESULTS: {analysis_results}
+            
+            USER QUESTION: "{user_input}"
+            
+            INSTRUCTIONS:
+            1. If the farmer uploaded a photo, explain the Vision Scan Results simply.
+            2. Connect the plant's health to the Tupi weather (e.g., humidity/rain).
+            3. Keep your answer under 3 sentences for mobile display.
+            """
+
+            print(f"📡 Using API Key {current_key_index + 1} for Chat Generation...")
+
+            # Build the client and generate the final answer
+            client = genai.Client(api_key=current_key)
+            response = client.models.generate_content(
+                model="gemini-2.0-flash", contents=prompt
+            )
+
+            return response.text
+
         except Exception as e:
             error_details = str(e)
             print(f"❌ Gemini Error on Key {current_key_index + 1}: {error_details}")
 
-            # THE INTERCEPTOR: Check if the error is a Rate Limit or Quota issue
+            # If the key is exhausted, rotate and CONTINUE the loop
             if (
                 "RESOURCE_EXHAUSTED" in error_details
                 or "Quota exceeded" in error_details
                 or "429" in error_details
             ):
                 print(f"⚠️ Key {current_key_index + 1} is at limit! Swapping mags...")
-                # Shift to the next key and loop back around if at the end
                 current_key_index = (current_key_index + 1) % len(API_KEYS)
-                continue # Jump back to the top of the 'for' loop and try again!
+                continue
 
-            # If it's a different kind of error (like no internet), don't swap, just fail
-            return "System Error: Check the VS Code terminal for details."
+            # If it's a different error, return it so the UI Snitch can show it
+            return f"System Error: {error_details}"
 
-    # If the loop finishes and ALL keys failed...
+    # If the loop finishes and every single key failed
     return "all ai keys are at limit wait for a moment"

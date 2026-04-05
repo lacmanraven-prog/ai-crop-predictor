@@ -18,7 +18,7 @@
 .header-title {
   position: absolute;
   /* This moves the starting point to the middle of the header */
-  left: 52%;
+  left: 50%;
   /* This shifts it back by half its own width to be perfectly centered */
   transform: translateX(-50%);
 
@@ -295,7 +295,7 @@ body {
   transform: scale(2);
   position: absolute;
   top: 39%;
-  left: 50%;
+  left: 49%;
   transform: translate(-50%, -50%) scale(2);
   z-index: -1;
   transition: transform 0.5s ease;
@@ -307,7 +307,7 @@ body {
   color: #e3e3e3;
   position: absolute;
   bottom: 30%; /* Position text at the bottom */
-  left: 50%;
+  left: 49%;
   transform: translateX(-50%);
   z-index: 1;
   opacity: 1;
@@ -326,10 +326,10 @@ body {
   width: 32px;
   height: 32px;
   margin-right: 5px;
-  margin-bottom: 10px;
+  margin-bottom: 300px !important; /* This is the key to prevent squishing */
   flex-shrink: 0;
   position: relative; /* This is the titanium cage */
-  margin-top: 2px; /* Helps align it perfectly with the text */
+  margin-top: 0px; /* Helps align it perfectly with the text */
 }
 
 .loader {
@@ -360,7 +360,7 @@ body {
 }
 
 .loader.fast {
-  --time-animation: 3s; /* Fast speed restored! */
+  --time-animation: 2s; /* Fast speed restored! */
 }
 
 .loader::before {
@@ -463,14 +463,26 @@ body {
 
 /* --- THE KEYFRAMES (The actual movement rules) --- */
 @keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes roundness {
-  0%, 100% { filter: contrast(15); }
-  20%, 40% { filter: contrast(3); }
-  60% { filter: contrast(15); }
+  0%,
+  100% {
+    filter: contrast(15);
+  }
+  20%,
+  40% {
+    filter: contrast(3);
+  }
+  60% {
+    filter: contrast(15);
+  }
 }
 
 /* ========================================== */
@@ -479,22 +491,36 @@ body {
 
 /* 1. Make the overall mask pulsing fast (0.4s) */
 .loader.fast svg mask {
-  animation-duration: 0.4s !important; 
+  animation-duration: 0.4s !important;
 }
 
 /* 2. Force ALL the inner slime polygons to spin at 0.8s */
 .loader.fast svg mask polygon {
-  animation-duration: 0.8s !important; 
+  animation-duration: 0.8s !important;
 }
 
 /* 3. Re-apply the timing delays so the slime stays organic and doesn't clump up */
-.loader.fast svg mask polygon:nth-child(1) { animation-delay: 0.2s !important; }
-.loader.fast svg mask polygon:nth-child(2) { animation-delay: 0.4s !important; }
-.loader.fast svg mask polygon:nth-child(3) { animation-delay: 0.5s !important; }
-.loader.fast svg mask polygon:nth-child(4) { animation-delay: 0.2s !important; }
-.loader.fast svg mask polygon:nth-child(5) { animation-delay: 0.4s !important; }
-.loader.fast svg mask polygon:nth-child(6) { animation-delay: 0.5s !important; }
-.loader.fast svg mask polygon:nth-child(7) { animation-delay: 0.2s !important; }
+.loader.fast svg mask polygon:nth-child(1) {
+  animation-delay: 0.2s !important;
+}
+.loader.fast svg mask polygon:nth-child(2) {
+  animation-delay: 0.4s !important;
+}
+.loader.fast svg mask polygon:nth-child(3) {
+  animation-delay: 0.5s !important;
+}
+.loader.fast svg mask polygon:nth-child(4) {
+  animation-delay: 0.2s !important;
+}
+.loader.fast svg mask polygon:nth-child(5) {
+  animation-delay: 0.4s !important;
+}
+.loader.fast svg mask polygon:nth-child(6) {
+  animation-delay: 0.5s !important;
+}
+.loader.fast svg mask polygon:nth-child(7) {
+  animation-delay: 0.2s !important;
+}
 
 @keyframes rotation {
   0% {
@@ -577,10 +603,10 @@ body {
 .input-wrapper {
   position: fixed; /* Locks it to the screen */
   bottom: 35px; /* Distance from the bottom edge */
-  left: 48.5%; /* Centers it horizontally */
+  left: 50%; /* Centers it horizontally */
   transform: translateX(-50%); /* Perfectly aligns the center */
   width: 100%;
-  max-width: 850px;
+  max-width: 750px;
   z-index: 1000; /* Keeps it on top of the chat text */
   padding: 0 20px;
   box-sizing: border-box;
@@ -708,7 +734,7 @@ body {
 .message-wrapper {
   display: flex;
   width: 100%;
-  margin-bottom: 40px;
+  margin-bottom: 0px;
   align-items: flex-start;
 }
 
@@ -735,16 +761,30 @@ body {
 
 /* User Bubble Style */
 .user .message-bubble {
-  background-color: #333538; /* Subtle gray */
+  background-color: #333538;
   color: #ffffff;
-  border-bottom-right-radius: 4px; /* Makes it look like a tail */
+
+  /* 👇 1. This is the magic. Increase these to make it 'bigger' */
+  /* Top/Bottom: 12px | Left/Right: 20px */
+  padding: 15px 23px;
+
+  /* 2. Optional: Make it wider on the screen */
+  max-width: 90%;
+
+  /* 3. Keep the tail look */
+  border-radius: 20px;
+  border-bottom-right-radius: 4px;
+
+  /* 4. Improve readability */
+  line-height: 1.5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* AI Bubble Style */
 .ai .message-bubble {
   color: #e3e3e3;
   border-bottom-left-radius: 4px;
-  margin-top: 41px; /* Lower the bubble down from the icon */
+  margin-top: 39px; /* Lower the bubble down from the icon */
 }
 
 /* ========================================== */
@@ -909,13 +949,6 @@ body {
 .rail-item.active,
 .rail-item:hover {
   color: #4285f4;
-}
-
-/* IMPORTANT: Shift your chat content to the right to make room for the rail */
-#chatBox,
-.input-wrapper {
-  margin-left: 70px;
-  width: calc(100% - 70px);
 }
 
 /* RESPONSIVE: On very small phones, we hide the rail to save space */

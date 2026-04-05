@@ -1,42 +1,45 @@
+import os
+import io
 import base64
+import PIL.Image
 from google import genai
 from google.genai import types
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
 
-# We deleted the global API_KEY and client from here!
+def analyze_plant_image(base64_image_string, api_key):
+    """
+    The Vision Specialist: Analyzes the image using the
+    specific API key provided by the rotation engine.
+    """
 
-def analyze_plant_image(base64_image, api_key):
-    """Specific specialist function for crop disease diagnosis"""
-    
-    # 1. Build the fresh client using the key handed to us by brain.py!
+    # 1. Initialize the client using the key passed from brain.py
     client = genai.Client(api_key=api_key)
-    
+
+    # 2. Clean the base64 string (Strip the 'data:image/png;base64,' header if present)
+    if "," in base64_image_string:
+        base64_image_string = base64_image_string.split(",")[1]
+
     try:
-        # 2. Decode the image
-        header, encoded = base64_image.split(",", 1)
-        mime_type = header.split(":")[1].split(";")[0]
+        # 3. Convert base64 string into an actual Image object
+        image_bytes = base64.b64decode(base64_image_string)
+        img = PIL.Image.open(io.BytesIO(image_bytes))
 
-        image_part = types.Part.from_bytes(
-            data=base64.b64decode(encoded), mime_type=mime_type
-        )
-
-        # 3. The Specialist Prompt
-        prompt = """
-        You are a Plant Pathologist. Analyze this crop image:
-        1. Identify the plant and any visible disease, pest, or deficiency.
-        2. Give a confidence level (e.g., 85% certain).
-        3. Provide 1 immediate action for the farmer.
-        Keep the total response under 3 sentences.
+        # 4. The Vision-Specific Prompt
+        vision_prompt = """
+        You are a specialized Agricultural Vision Expert for Tupi, South Cotabato.
+        Identify the plant and any diseases, pests, or health issues visible.
+        Provide a concise, technical diagnosis.
         """
 
+        # 5. Generate the analysis
+        # Using gemini-2.0-flash for maximum speed on image processing
         response = client.models.generate_content(
-            model="gemini-2.5-flash", contents=[image_part, prompt]
+            model="gemini-2.0-flash", contents=[vision_prompt, img]
         )
 
         return response.text
+
     except Exception as e:
-        print(f"Vision Error: {e}")
-        return "I encountered an error while scanning the image."
+        # CRITICAL: We raise the error back to brain.py.
+        # This tells brain.py: "This key failed! Swap mags and try again!"
+        raise e

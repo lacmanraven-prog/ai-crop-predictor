@@ -78,9 +78,9 @@
             <i class="fa-solid fa-robot"></i>
         </button>
 
-        <button class="rail-item" id="railScannerBtn" title="Crop Scanner">
-            <i class="fa-solid fa-camera-retro"></i>
-        </button>
+        <a href="../AI-Crop-Scanner/scanner.php" class="rail-item" title="Cropy Chat" style="text-decoration: none;">
+            <i class="fa-solid fa-robot"></i>
+        </a>
     </div>
 
     <div class="input-wrapper">
