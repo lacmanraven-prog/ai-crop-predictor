@@ -52,7 +52,7 @@
             <i class="fa-solid fa-bars"></i>
         </button>
 
-        <div class="header-title">CropyAi Chatbot</div>
+        <div class="header-title">Chatbot</div>
 
         <div class="profile-section">
             <div class="profile-container">
@@ -79,8 +79,7 @@
         </button>
 
         <a href="../AI-Crop-Scanner/scanner.php" class="rail-item" title="Cropy Chat" style="text-decoration: none;">
-            <i class="fa-solid fa-robot"></i>
-        </a>
+            <i class="fa-regular fa-camera"></i> </a>
     </div>
 
     <div class="input-wrapper">

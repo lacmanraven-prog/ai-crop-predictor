@@ -292,22 +292,23 @@ body {
 }
 
 .greeting-wrapper .heat-loader-wrapper {
-  transform: scale(2);
+  transform: scale(5); /* what is dial? This is the size of the center intro loader, adjust as needed */ 
   position: absolute;
-  top: 39%;
+  top: 60%;
   left: 49%;
-  transform: translate(-50%, -50%) scale(2);
+  transform: translate(-50%, -50%) scale(5);
   z-index: -1;
   transition: transform 0.5s ease;
 }
 
 .greeting-text {
-  font-size: 4rem;
+  font-size: 2rem;
   font-weight: bold;
+  font-family: 'sans-serif';
   color: #e3e3e3;
   position: absolute;
-  bottom: 30%; /* Position text at the bottom */
-  left: 49%;
+  bottom: 5%; /* Position text at the bottom */
+  left: 50%;
   transform: translateX(-50%);
   z-index: 1;
   opacity: 1;
@@ -338,7 +339,7 @@ body {
   --color-three: #ffbf4780;
   --color-four: #bf4a1d80;
   --color-five: #ffbf4740;
-  --time-animation: 10s; /* Default is slow */
+  --time-animation: 4s; /* Default is slow */
 
   width: 100px;
   height: 100px;
@@ -930,7 +931,7 @@ body {
 .rail-item {
   background: transparent !important;
   border: none;
-  color: #c4c7c5;
+  color: #ffffff;
   font-size: 20px;
   cursor: pointer;
   width: 100%;
@@ -948,7 +949,7 @@ body {
 
 .rail-item.active,
 .rail-item:hover {
-  color: #4285f4;
+  color: #ffffff;
 }
 
 /* RESPONSIVE: On very small phones, we hide the rail to save space */
