@@ -6,10 +6,65 @@ const sendIcon = document.getElementById("sendIcon");
 const chatBox = document.getElementById("chatBox");
 
 let selectedImageBase64 = null;
+let greetingDismissed = false; // 👈 Track if greeting has already been dismissed
 
 const previewContainer = document.getElementById("imagePreviewContainer");
 const previewImage = document.getElementById("imagePreview");
 const removeImageBtn = document.getElementById("removeImageBtn");
+
+// ==========================================
+// INJECT ANIMATION STYLES (self-contained)
+// ==========================================
+const animStyles = document.createElement("style");
+animStyles.textContent = `
+  /* --- GREETING FADE OUT --- */
+  .greeting-wrapper {
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .greeting-wrapper.dismiss {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+    pointer-events: none;
+  }
+
+  /* --- AI ICON POP IN --- */
+  @keyframes iconPopIn {
+    0%   { transform: scale(0) translateY(8px); opacity: 0; }
+    60%  { transform: scale(1.15) translateY(-2px); opacity: 1; }
+    80%  { transform: scale(0.95) translateY(1px); }
+    100% { transform: scale(1) translateY(0px); opacity: 1; }
+  }
+
+  .icon-pop-in {
+    animation: iconPopIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  /* --- AI ICON SLOT (keeps the icon in place) --- */
+  .icon-slot {
+    flex-shrink: 0;
+    position: relative;
+    top: 0;
+  }
+`;
+document.head.appendChild(animStyles);
+
+// ==========================================
+// GREETING DISMISS FUNCTION
+// ==========================================
+function dismissGreeting() {
+  if (greetingDismissed) return; // Only run once
+  greetingDismissed = true;
+
+  const greetingWrapper = document.querySelector(".greeting-wrapper");
+  if (!greetingWrapper) return;
+
+  greetingWrapper.classList.add("dismiss");
+
+  // Remove from DOM after animation so it doesn't block layout
+  setTimeout(() => {
+    greetingWrapper.remove();
+  }, 650);
+}
 
 // ==========================================
 // 1. THE MICROPHONE ENGINE & KILL SWITCH
@@ -17,7 +72,6 @@ const removeImageBtn = document.getElementById("removeImageBtn");
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
-// 👇 Global variables for the Stop Button
 let abortController = null;
 let isThinking = false;
 
@@ -25,15 +79,11 @@ if (SpeechRecognition) {
   const recognition = new SpeechRecognition();
 
   sendBtn.addEventListener("click", function () {
-    // 🛑 If AI is thinking, this button becomes the KILL SWITCH
     if (isThinking) {
-      if (abortController) {
-        abortController.abort(); // FIRE THE KILL SWITCH!
-      }
-      return; // Stop the function
+      if (abortController) abortController.abort();
+      return;
     }
 
-    // Normal logic if NOT thinking
     if (sendIcon.className.includes("fa-microphone")) {
       userInput.placeholder = "Listening... Speak now!";
       recognition.start();
@@ -56,7 +106,6 @@ if (SpeechRecognition) {
     );
   };
 } else {
-  // Fallback if browser doesn't support speech recognition
   sendBtn.addEventListener("click", function () {
     if (isThinking) {
       if (abortController) abortController.abort();
@@ -70,7 +119,7 @@ if (SpeechRecognition) {
 // 2. THE ICON FLIPPER & INPUT LISTENERS
 // ==========================================
 function checkIcon() {
-  if (isThinking) return; // Don't flip icons if we are in Stop Button mode
+  if (isThinking) return;
 
   if (userInput.value.trim() !== "" || selectedImageBase64 !== null) {
     sendIcon.className = "fa-solid fa-paper-plane";
@@ -82,7 +131,7 @@ function checkIcon() {
 function scrollToBottom() {
   window.scrollTo({
     top: document.body.scrollHeight,
-    behavior: "smooth",
+    behavior: "auto",
   });
 }
 
@@ -91,29 +140,23 @@ userInput.addEventListener("input", checkIcon);
 userInput.addEventListener("keydown", function (e) {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
-    // Don't allow enter key to spam if already thinking
-    if (!isThinking) {
-      sendMessage();
-    }
+    if (!isThinking) sendMessage();
   }
 });
 
 // ==========================================
-// 3. SEND MESSAGE UI LOGIC (WITH STOP BUTTON)
+// 3. SEND MESSAGE UI LOGIC (WITH DATABASE SAVE)
 // ==========================================
 async function sendMessage() {
   const text = userInput.value.trim();
-
   if (!text && !selectedImageBase64) return;
 
-  // 🛑 LOCKDOWN MODE: ON (But button stays active so we can click Stop!)
-  isThinking = true;
-  userInput.disabled = true; // Disable typing
-  // Notice we do NOT disable sendBtn here anymore!
+  dismissGreeting();
 
-  // Turn the icon into a pulsing Stop Square
+  isThinking = true;
+  userInput.disabled = true;
   sendIcon.className = "fa-solid fa-square fa-fade";
-  sendIcon.style.color = "#ff6b6b"; // Red
+  sendIcon.style.color = "#ff6b6b";
 
   let userMsgHTML = `<div class="message-wrapper user"><div class="message-bubble">`;
   if (selectedImageBase64) {
@@ -123,51 +166,62 @@ async function sendMessage() {
   userMsgHTML += `</div></div>`;
 
   chatBox.insertAdjacentHTML("beforeend", userMsgHTML);
+  scrollToBottom();
+
+  // 👇 DATABASE SAVE HOOK #1: Save the User's Message
+  try {
+    await fetch("backend/chat_handler.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: "user",
+        message: text,
+        image_data: selectedImageBase64,
+      }),
+    });
+  } catch (err) {
+    console.error("DB Save Error (User):", err);
+  }
 
   const imageToSend = selectedImageBase64;
   selectedImageBase64 = null;
   previewContainer.classList.add("hidden");
   userInput.value = "";
-  scrollToBottom();
 
   const fastMaskId = "mask-fast-" + Date.now();
   const slowMaskId = "mask-slow-" + Date.now();
 
   const fastIconHTML = `
-  <div class="heat-loader-wrapper">
+  <div class="heat-loader-wrapper icon-pop-in">
     <div class="loader fast"> 
       <svg width="100" height="100" viewBox="0 0 100 100" style="position:absolute;">
-        <defs>
-          <mask id="${fastMaskId}">
-            <polygon points="0,0 100,0 100,100 0,100" fill="black"></polygon>
-            <polygon points="25,25 75,25 50,75" fill="white"></polygon>
-            <polygon points="50,25 75,75 25,75" fill="white"></polygon>
-            <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-            <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-            <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-            <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-          </mask>
-        </defs>
+        <defs><mask id="${fastMaskId}">
+          <polygon points="0,0 100,0 100,100 0,100" fill="black"></polygon>
+          <polygon points="25,25 75,25 50,75" fill="white"></polygon>
+          <polygon points="50,25 75,75 25,75" fill="white"></polygon>
+          <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+          <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+          <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+          <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+        </mask></defs>
       </svg>
       <div class="box" style="mask: url(#${fastMaskId}); -webkit-mask: url(#${fastMaskId});"></div>
     </div>
   </div>`;
 
   const slowIconHTML = `
-  <div class="heat-loader-wrapper">
+  <div class="heat-loader-wrapper icon-pop-in">
     <div class="loader"> 
       <svg width="100" height="100" viewBox="0 0 100 100" style="position:absolute;">
-        <defs>
-          <mask id="${slowMaskId}">
-            <polygon points="0,0 100,0 100,100 0,100" fill="black"></polygon>
-            <polygon points="25,25 75,25 50,75" fill="white"></polygon>
-            <polygon points="50,25 75,75 25,75" fill="white"></polygon>
-            <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-            <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-            <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-            <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-          </mask>
-        </defs>
+        <defs><mask id="${slowMaskId}">
+          <polygon points="0,0 100,0 100,100 0,100" fill="black"></polygon>
+          <polygon points="25,25 75,25 50,75" fill="white"></polygon>
+          <polygon points="50,25 75,75 25,75" fill="white"></polygon>
+          <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+          <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+          <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+          <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+        </mask></defs>
       </svg>
       <div class="box" style="mask: url(#${slowMaskId}); -webkit-mask: url(#${slowMaskId});"></div>
     </div>
@@ -178,21 +232,18 @@ async function sendMessage() {
   chatBox.insertAdjacentHTML(
     "beforeend",
     `
-        <div id="${thinkingId}" class="message-wrapper ai">
-            <div class="icon-slot">${fastIconHTML}</div>
-            <div class="message-bubble"><i>CropyAi is thinking...</i></div>
-        </div>`,
+    <div id="${thinkingId}" class="message-wrapper ai">
+      <div class="icon-slot">${fastIconHTML}</div>
+      <div class="message-bubble"><i>CropyAi is thinking...</i></div>
+    </div>`,
   );
   scrollToBottom();
 
-  // 💥 NEW: Create the controller for this specific request
   abortController = new AbortController();
 
   try {
-    // Pass the signal to api.js so the backend call can be canceled
     const data = await sendToPython(text, imageToSend, abortController.signal);
 
-    // 🟢 SUCCESS: UNLOCK EVERYTHING
     resetUIState();
 
     const aiRow = document.getElementById(thinkingId);
@@ -201,18 +252,28 @@ async function sendMessage() {
       const bubble = aiRow.querySelector(".message-bubble");
       bubble.innerHTML = "";
       typeWriter(bubble, data.reply, 20);
+
+      // 👇 DATABASE SAVE HOOK #2: Save the AI's Reply
+      try {
+        await fetch("backend/chat_handler.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sender: "ai",
+            message: data.reply,
+          }),
+        });
+      } catch (err) {
+        console.error("DB Save Error (AI):", err);
+      }
     }
   } catch (error) {
     console.error("Frontend Crash:", error);
-
-    // 🟢 ERROR OR STOPPED: UNLOCK EVERYTHING
     resetUIState();
 
     const aiRow = document.getElementById(thinkingId);
     if (aiRow) {
       aiRow.querySelector(".icon-slot").innerHTML = slowIconHTML;
-
-      // Check if it was manually stopped by the user!
       if (error.name === "AbortError") {
         aiRow.querySelector(".message-bubble").innerHTML =
           `<span style='color:#c4c7c5;'><i>You stopped this response.</i></span>`;
@@ -224,18 +285,19 @@ async function sendMessage() {
   }
 }
 
-// Helper function to easily reset everything when done or stopped
+// ==========================================
+// UNLOCK UI LOGIC
+// ==========================================
 function resetUIState() {
   isThinking = false;
   userInput.disabled = false;
-  sendIcon.style.color = ""; // Reset icon color back to normal
-  checkIcon(); // Bring back paper plane or mic
-  userInput.focus(); // Put cursor back in box
+  sendIcon.style.color = "";
+  checkIcon();
+  userInput.focus();
 }
-
-// ==========================================
-// 4. TOOLS & IMAGE LOGIC
-// ==========================================
+/* ========================================== */
+/* 4. TOOLS & IMAGE LOGIC                     */
+/* ========================================== */
 const toolsBtn = document.getElementById("toolsBtn");
 const toolsMenu = document.getElementById("toolsMenu");
 const uploadBtn = document.querySelector(".menu-item");
@@ -278,10 +340,11 @@ removeImageBtn.addEventListener("click", function () {
   checkIcon();
 });
 
-// 1. Grab the card element
+/* ========================================== */
+/* DRAG & DROP                                */
+/* ========================================== */
 const inputCard = document.querySelector(".input-card");
 
-// 2. Prevent the browser from opening the image file
 ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
   inputCard.addEventListener(
     eventName,
@@ -293,24 +356,18 @@ const inputCard = document.querySelector(".input-card");
   );
 });
 
-// 3. Add the "Glow" when dragging over
-inputCard.addEventListener("dragover", () => {
-  inputCard.classList.add("drag-over");
-});
+inputCard.addEventListener("dragover", () =>
+  inputCard.classList.add("drag-over"),
+);
+inputCard.addEventListener("dragleave", () =>
+  inputCard.classList.remove("drag-over"),
+);
 
-inputCard.addEventListener("dragleave", () => {
-  inputCard.classList.remove("drag-over");
-});
-
-// 4. CATCH THE DROP!
 inputCard.addEventListener("drop", (e) => {
   inputCard.classList.remove("drag-over");
-
   const files = e.dataTransfer.files;
   if (files.length > 0) {
     const file = files[0];
-
-    // Make sure it's an image
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = function (event) {
@@ -324,117 +381,152 @@ inputCard.addEventListener("drop", (e) => {
   }
 });
 
-// ==========================================
-// 5. SIDEBAR & MENU LOGIC
-// ==========================================
-const profileBtn = document.getElementById("profileBtn");
-const profileMenu = document.getElementById("profileMenu");
+/* ========================================== */
+/* 5. SCANNER BRIDGE (The "Auto-Upload" Fix)  */
+/* ========================================== */
+window.addEventListener("DOMContentLoaded", () => {
+  // 1. Grab the Image from the Locker
+  const scannedImage = sessionStorage.getItem("lastScanImage");
 
-profileBtn.addEventListener("click", function (e) {
-  e.stopPropagation();
-  profileMenu.classList.toggle("hidden");
-  toolsMenu.classList.add("hidden");
-});
+  // 2. Grab the Disease name from the URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const diseaseName = urlParams.get("disease");
 
-document.addEventListener("click", function (e) {
-  if (!profileMenu.contains(e.target)) {
-    profileMenu.classList.add("hidden");
+  // 3. THE "SPOOF" LOGIC: Make it act like a manual upload
+  if (scannedImage || diseaseName) {
+    console.log("📸 Scanner Hand-off detected. Processing auto-upload...");
+
+    if (scannedImage) {
+      // Push image into the engine's hand
+      selectedImageBase64 = scannedImage;
+
+      // Show the preview in the glass-card UI
+      if (previewImage) previewImage.src = scannedImage;
+      if (previewContainer) previewContainer.classList.remove("hidden");
+    }
+
+    if (diseaseName && userInput) {
+      // Auto-fill the message
+      userInput.value = `I found ${diseaseName} in my palay. What is the organic treatment plan for this in Tupi?`;
+
+      // Toggle the microphone to the paper-plane icon
+      if (typeof checkIcon === "function") checkIcon();
+    }
+
+    // 4. AUTO-SEND TRIGGER
+    // We wait 1 second so you can see the "upload" pop in before it sends
+    setTimeout(() => {
+      if (typeof sendMessage === "function" && !isThinking) {
+        console.log("🚀 Bridge: Auto-sending scanner data to CropyAi...");
+        sendMessage();
+
+        // Cleanup: Clear the image so it doesn't resend if they refresh
+        sessionStorage.removeItem("lastScanImage");
+      }
+    }, 1000);
   }
 });
 
-const menuBtn = document.getElementById("menuBtn");
-const sidebar = document.getElementById("sidebar");
-const sidebarOverlay = document.getElementById("sidebarOverlay");
-
-menuBtn.addEventListener("click", function (e) {
-  e.stopPropagation();
-  sidebar.classList.add("active");
-  sidebarOverlay.classList.remove("hidden");
-});
-
-sidebarOverlay.addEventListener("click", closeSidebar);
-
-function closeSidebar() {
-  sidebar.classList.remove("active");
-  sidebarOverlay.classList.add("hidden");
-}
-
-document.querySelectorAll(".nav-item").forEach((item) => {
-  item.addEventListener("click", closeSidebar);
-});
-
-// --- MAGIC SLIDER LOGIC ---
-const indicator = document.getElementById("navIndicator");
-const railItems = document.querySelectorAll(".rail-item");
-const sideRail = document.querySelector(".side-rail");
-
-function moveIndicator(element) {
-  if (element && indicator) {
-    const yPos = element.offsetTop;
-    indicator.style.transform = `translateY(${yPos}px)`;
-  }
-}
-
-const initialActive = document.querySelector(".rail-item.active");
-moveIndicator(initialActive);
-
-railItems.forEach((item) => {
-  item.addEventListener("mouseenter", (e) => {
-    moveIndicator(e.target);
-  });
-});
-
-sideRail.addEventListener("mouseleave", () => {
-  const currentActive = document.querySelector(".rail-item.active");
-  moveIndicator(currentActive);
-});
-
-railItems.forEach((item) => {
-  item.addEventListener("click", function () {
-    railItems.forEach((btn) => btn.classList.remove("active"));
-    this.classList.add("active");
-    moveIndicator(this);
-  });
-});
-
 // ==========================================
-// TYPEWRITER ENGINE (RESTORED)
+// TYPEWRITER ENGINE
 // ==========================================
 function typeWriter(element, text, speed = 15) {
   let i = 0;
-  element.innerHTML = ""; // Ensure the box is empty first
+  element.innerHTML = "";
 
   function type() {
     if (i < text.length) {
       element.innerHTML += text.charAt(i);
-      scrollToBottom(); // Keeps the chat pinned to the bottom as it grows!
+      scrollToBottom();
       i++;
       setTimeout(type, speed);
     }
   }
-  type(); // Start the engine
+  type();
 }
 
 // ==========================================
-// THE BRIDGE RECEIVER (Auto-Send Logic)
+// BRIDGE RECEIVER (Scanner Auto-Send)
 // ==========================================
-window.addEventListener('DOMContentLoaded', () => {
-    // Check if the scanner left a message in memory
-    const savedPrompt = localStorage.getItem('cropy_bridge_prompt');
-    
-    if (savedPrompt) {
-        // 1. Put the message in the input box
-        userInput.value = savedPrompt;
-        
-        // 2. Delete it from memory so it doesn't loop forever
-        localStorage.removeItem('cropy_bridge_prompt'); 
-        
-        // 3. Update the icon
-        checkIcon();
-        
-        // 4. Automatically click send!
-        setTimeout(() => {
-            sendMessage();
-        }, 500); // 500ms delay looks more natural
-    }
+window.addEventListener("DOMContentLoaded", () => {
+  const savedPrompt = localStorage.getItem("cropy_bridge_prompt");
+
+  if (savedPrompt) {
+    userInput.value = savedPrompt;
+    localStorage.removeItem("cropy_bridge_prompt");
+    checkIcon();
+
+    setTimeout(() => {
+      sendMessage();
+    }, 500);
+  }
 });
+
+// ==========================================
+// 5. DATABASE MEMORY LOGIC (LOAD HISTORY)
+// ==========================================
+async function loadChatHistory() {
+  try {
+    const response = await fetch("backend/chat_handler.php");
+    const result = await response.json();
+
+    if (result.status === "success" && result.data.length > 0) {
+      // If history exists, instantly kill the intro greeting
+      dismissGreeting();
+
+      result.data.forEach((log) => {
+        let msgHTML = `<div class="message-wrapper ${log.sender}">`;
+
+        if (log.sender === "ai") {
+          // Generate a unique ID for each historical message so the masks don't conflict
+          const uniqueId =
+            "mask-history-" +
+            Date.now() +
+            "-" +
+            Math.random().toString(36).substr(2, 9);
+
+          // 👇 THE FIX: Using the Heat Wave Loader, but completely frozen
+          const historyIconHTML = `
+          <div class="icon-slot">
+            <div class="heat-loader-wrapper">
+              <div class="loader"> 
+                <svg width="100" height="100" viewBox="0 0 100 100" style="position:absolute;">
+                  <defs><mask id="${uniqueId}">
+                    <polygon points="0,0 100,0 100,100 0,100" fill="black"></polygon>
+                    
+                    <polygon points="25,25 75,25 50,75" fill="white"></polygon>
+                    <polygon points="50,25 75,75 25,75" fill="white"></polygon>
+                    <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+                    <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+                    <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+                    <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+                  </mask></defs>
+                </svg>
+                <div class="box" style="mask: url(#${uniqueId}); -webkit-mask: url(#${uniqueId});"></div>
+              </div>
+            </div>
+          </div>`;
+
+          msgHTML += `${historyIconHTML}
+          <div class="message-bubble">${log.message}</div>`;
+        } else {
+          msgHTML += `<div class="message-bubble">`;
+          if (log.image_data) {
+            msgHTML += `<img src="${log.image_data}" style="max-width: 100%; border-radius: 10px; margin-bottom: 8px; display: block;">`;
+          }
+          msgHTML += `<span>${log.message}</span></div>`;
+        }
+
+        msgHTML += `</div>`;
+        chatBox.insertAdjacentHTML("beforeend", msgHTML);
+      });
+
+      scrollToBottom(true); // Instant scroll to bottom on load
+    }
+  } catch (error) {
+    console.error("Failed to load memory banks:", error);
+  }
+}
+
+// Fire the history loader the second the DOM is ready
+window.addEventListener("DOMContentLoaded", loadChatHistory);

@@ -34,7 +34,7 @@ def analyze_plant_image(base64_image_string, api_key):
         # 5. Generate the analysis
         # Using gemini-2.0-flash for maximum speed on image processing
         response = client.models.generate_content(
-            model="gemini-2.0-flash", contents=[vision_prompt, img]
+            model="gemini-2.5-flash-lite", contents=[vision_prompt, img]
         )
 
         return response.text

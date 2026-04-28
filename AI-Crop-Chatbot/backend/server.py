@@ -8,12 +8,10 @@ CORS(app)
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
-    user_message = data.get('message')
     
-    # NEW: Catch the image if the user uploaded one!
+    user_message = data.get('message') 
     image_data = data.get('image') 
     
-    # NEW: Pass both the text and the image to the brain
     ai_reply = brain.get_ai_response(user_message, image_data)
     
     return jsonify({"reply": ai_reply})
