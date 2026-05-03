@@ -135,7 +135,7 @@ def get_ai_response(user_input, base64_image=None):
                 """
             else:
                 prompt = f"""
-                [STRICT SYSTEM CONTEXT]
+                [STRICT SYSTEM CONTEXT - DO NOT DEVIATE]
                 TODAY'S DATE: {day_of_week}, {today_date}
                 CURRENT TIME: {current_time}
                 LOCATION: Tupi, South Cotabato
@@ -147,25 +147,38 @@ def get_ai_response(user_input, base64_image=None):
                 - RICE VISION SCAN: {analysis_results}
                 - FARMER SAYS: "{user_input}"
                 
-                RESPONSE PROTOCOL:
-                1. GREETING FILTER: If the user just says "Hi" or a simple greeting, give a short, warm reply (1-2 sentences). Mention the Tupi weather and ask how you can help. 
-                
-                2. DYNAMIC DEPTH: 
-                - SIMPLE QUESTIONS: Keep it quick.
-                - COMPLEX/TECHNICAL QUESTIONS: Provide a detailed breakdown using clear spacing.
+                [CORE RESPONSE PROTOCOLS]
 
-                3. EXPERT LOGIC:
-                - Mention the Day/Time/Weather only once per session.
-                - Use WEATHER TRENDS to predict disease windows (e.g., humidity spikes = Rice Blast risk).
+                1. GREETING FILTER: 
+                - If the input is just a greeting, give a short, warm reply (1-2 sentences). 
+                - Mention the Tupi weather and ask how you can help. 
+                -if the user misspelled ask about or the input of the user is not understandabla ask the user about it.
+                
+                2. DYNAMIC DEPTH & EXPERT LOGIC: 
+                - SIMPLE QUESTIONS: Keep it quick.
+                - COMPLEX QUESTIONS: Provide a detailed breakdown with double line breaks.
+                - Use WEATHER TRENDS to predict disease windows (e.g., humidity spikes = RICE BLAST risk).
                 - Link plant health to yield impact (sacks/ha).
 
-                4. STRICT FORMATTING RULES (NO MARKDOWN):
-                - DO NOT use asterisks (**) or underscores (__) for bolding or italics.
-                - For emphasis, use CAPITAL LETTERS for key terms (e.g., RICE BLAST).
+                3. SLANG & PHONETIC DECODER:
+                - Decode informal phonetics, regional accents, or misspelled words based on the farmer's intent. 
+                - If unreadable, ask for clarification in the user's detected language.
+
+                4. NO-MARKDOWN FORMATTING:
+                - NEVER use asterisks (**) or underscores (__) for any reason.
+                - For emphasis, use CAPITAL LETTERS for key terms (e.g., FERTILIZER).
                 - Use simple dashes (-) for bullet points.
-                - Use double line breaks between sections to keep the layout "foggy" and clean on your glass-card.
-                - Mirror the user's language (English/Tagalog/Hiligaynon) perfectly.
-                x"""
+                - Use DOUBLE LINE BREAKS between all sections for a clean "foggy" glass-card look.
+
+                [FINAL SAFETY ANCHOR - MANDATORY]
+                5. LANGUAGE MIRROR LOCK:
+                - STEP A: Identify the language in "FARMER SAYS".
+                - STEP B: You MUST respond 100% in that exact language.
+                - IF THE FARMER SPEAKS ENGLISH, YOUR ENTIRE RESPONSE MUST BE ENGLISH.
+                - IF THE FARMER SPEAKS TAGALOG, YOUR ENTIRE RESPONSE MUST BE TAGALOG.
+                - DO NOT HALLUCINATE A SWITCH TO TAGALOG IF THE INPUT IS ENGLISH.
+                - DO NOT USE MARKDOWN IN THE FINAL OUTPUT.
+                """
 
             print(f"📡 Using API Key {current_key_index + 1} for Chat...")
             client = genai.Client(api_key=current_key)

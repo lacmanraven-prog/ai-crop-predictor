@@ -209,20 +209,24 @@ try {
             0% {
                 transform: rotate(0deg);
             }
+
             100% {
                 transform: rotate(360deg);
             }
         }
 
         @keyframes roundness1 {
+
             0%,
             100% {
                 filter: contrast(15);
             }
+
             20%,
             40% {
                 filter: contrast(3);
             }
+
             60% {
                 filter: contrast(15);
             }
@@ -399,7 +403,7 @@ try {
                     <img id="imagePreview" src="" style="max-width: 100px; border-radius: 10px; border: 1px solid #444746;">
                     <button id="removeImageBtn" style="position: absolute; top: 0; left: 100px; background: #ff4d4d; border: none; color: white; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">&times;</button>
                 </div>
-                <textarea id="userInput" placeholder="Ask CropyAi..."></textarea>
+                <textarea id="userInput" placeholder="Ask CropyAi..." spellcheck="true"></textarea>
                 <input type="file" id="imageInput" accept="image/*" style="display: none;">
 
                 <div class="button-row">
@@ -414,7 +418,7 @@ try {
                     </div>
 
                     <button id="sendBtn">
-                        <i id="sendIcon" class="fa-solid fa-microphone"></i>
+                        <i id="sendIcon" class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
             </div>

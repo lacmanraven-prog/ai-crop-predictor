@@ -67,65 +67,29 @@ function dismissGreeting() {
 }
 
 // ==========================================
-// 1. THE MICROPHONE ENGINE & KILL SWITCH
+// 1. THE SEND ENGINE & KILL SWITCH (MIC REMOVED)
 // ==========================================
-const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-
 let abortController = null;
 let isThinking = false;
 
-if (SpeechRecognition) {
-  const recognition = new SpeechRecognition();
-
-  sendBtn.addEventListener("click", function () {
-    if (isThinking) {
-      if (abortController) abortController.abort();
-      return;
-    }
-
-    if (sendIcon.className.includes("fa-microphone")) {
-      userInput.placeholder = "Listening... Speak now!";
-      recognition.start();
-    } else {
-      sendMessage();
-    }
-  });
-
-  recognition.onresult = function (event) {
-    const spokenText = event.results[0][0].transcript;
-    userInput.value = spokenText;
-    userInput.placeholder = "Ask CropyAi...";
-    checkIcon();
-  };
-
-  recognition.onerror = function (event) {
-    userInput.placeholder = "Ask CropyAi...";
-    alert(
-      "Microphone Error: " + event.error + ". Are you running on localhost?",
-    );
-  };
-} else {
-  sendBtn.addEventListener("click", function () {
-    if (isThinking) {
-      if (abortController) abortController.abort();
-      return;
-    }
-    sendMessage();
-  });
-}
+// Simplified button listener: No more mic checks
+sendBtn.addEventListener("click", function () {
+  if (isThinking) {
+    if (abortController) abortController.abort();
+    return;
+  }
+  sendMessage();
+});
 
 // ==========================================
-// 2. THE ICON FLIPPER & INPUT LISTENERS
+// 2. THE ICON LOCK & INPUT LISTENERS
 // ==========================================
 function checkIcon() {
   if (isThinking) return;
 
-  if (userInput.value.trim() !== "" || selectedImageBase64 !== null) {
-    sendIcon.className = "fa-solid fa-paper-plane";
-  } else {
-    sendIcon.className = "fa-solid fa-microphone";
-  }
+  // ICON LOCK: It will ALWAYS be the paper-plane now.
+  // We removed the logic that switches it back to a microphone.
+  sendIcon.className = "fa-solid fa-paper-plane";
 }
 
 function scrollToBottom() {
